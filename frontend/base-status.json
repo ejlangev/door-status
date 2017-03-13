@@ -1,0 +1,22 @@
+[
+  {
+    "id": 0,
+    "description": "Some Door",
+    "status": "Open"
+  },
+  {
+    "id": 1,
+    "description": "Some Door 1",
+    "status": "Open"
+  },
+  {
+    "id": 2,
+    "description": "Some Door 2",
+    "status": "Open"
+  },
+  {
+    "id": 3,
+    "description": "Some Door 3",
+    "status": "Open"
+  }
+]

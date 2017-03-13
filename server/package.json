@@ -1,0 +1,14 @@
+{
+  "name": "door-status-server",
+  "version": "1.0.0",
+  "description": "Server for door status monitor page",
+  "main": "lambda.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ethan Langevin",
+  "license": "MIT",
+  "dependencies": {
+    "pusher": "^1.5.1"
+  }
+}

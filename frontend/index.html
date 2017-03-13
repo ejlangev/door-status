@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Better Bathroom Status</title>
+    <script src="https://js.pusher.com/4.0/pusher.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js" charset="utf-8"></script>
+    <style>
+      #content {
+        width: 800px;
+        min-height: 400px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .door {
+        width: 325px;
+        height: 150px;
+        padding: 25px;
+        margin-right: 25px;
+        margin-bottom: 25px;
+        color: white;
+        font-size: 28px;
+        float: left;
+      }
+
+      .door.open {
+        background-color: green;
+      }
+
+      .door.closed {
+        background-color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="content">
+      <h1>Bathroom Status</h1>
+      <div id="doors"></div>
+    </div>
+
+    <script>
+      var FIVE_MINUTES_IN_MILLISECONDS = 5 * 60 * 1000;
+      var DOOR_DATA_PATH = 'bathroom-status.json';
+      var doorState = [];
+      var pusher = new Pusher('361b57bf5348f3f02b5f', {
+        encrypted: true
+      });
+
+      function syncFromS3() {
+        console.log('Syncing data from S3');
+        doorState = [{id: 0, description: '5th Floor (Left)', status: 'Open'}];
+
+        return $.getJSON(DOOR_DATA_PATH)
+          .then(function(loadedDoorState) {
+            doorState = loadedDoorState;
+            redrawDoors();
+          })
+          .catch(function(err) {
+            alert(err.message || 'Failed to load door status');
+          })
+      }
+
+      function redrawDoors() {
+        console.log('Redrawing doors');
+        var newHtml = doorState.map(function(door) {
+          return '<div class="door ' + (door.status === 'Open' ? 'open' : 'closed') + '"><p>' + door.id + ') ' + door.description + '</p></div>';
+        });
+        $('#doors').html(newHtml.join('\n'));
+      }
+
+      function connectPusher() {
+        console.log('Connecting to pusher');
+        var channel = pusher.subscribe('better-bathroom');
+        channel.bind('door-update', function(data) {
+          var door = doorState.find(function(d) {
+            return d.id === data.doorId;
+          });
+
+          if (door) {
+            door.status = data.doorStatus;
+            redrawDoors();
+          } else {
+            console.error('Unknown door ' + data.doorId);
+          }
+        });
+      }
+
+      setInterval(syncFromS3, FIVE_MINUTES_IN_MILLISECONDS);
+      syncFromS3().then(function() {
+        connectPusher();
+      })
+    </script>
+  </body>
+</html>
